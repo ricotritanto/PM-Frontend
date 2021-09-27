@@ -11,7 +11,9 @@ export default class Customer extends Component {
             customers:[],
             newCustomerData:{
                 'name':'',
-                'status':''
+                'alias':'',
+                'address':'',
+                'phone':''
             },
             isLoading:false,
             status:'',
@@ -19,7 +21,9 @@ export default class Customer extends Component {
             editCustomerData:{
                 'id':'',
                 'name':'',
-                // 'status':''
+                'alias':'',
+                'address':'',
+                'phone':''
             },
             editCustomerModal:false,
             noDataFound:''
@@ -33,17 +37,9 @@ export default class Customer extends Component {
     getCustomers(){
         axios.get('http://localhost:4000/api/customers')
         .then((res)=>{
-            if(res.status === 200){
-                this.setState({
-                    customers: res.data ? res.data:[],
-                })
-            }
-            if(res.data.status === "failed" &&  res.data.success === false)
-            {
-                this.setState({
-                    noDataFound:res.data.message,
-                })
-            }
+            this.setState({
+            customers: res.data ? res.data:[],
+            })
         })
     }
 
@@ -72,8 +68,10 @@ export default class Customer extends Component {
                 customer : newCustomers,
                 newCustomerModal:false,
                 newCustomerData:{
-                    'customer_name':'',
-                    // 'status':''
+                    'name':'',
+                    'alias':'',
+                    'address':'',
+                    'phone':''
                 }
             },()=>
             Swal.fire({
@@ -100,10 +98,10 @@ export default class Customer extends Component {
     }
 
     // function untuk get data edit
-    editCustomer = (id, customer_name)=>{
+    editCustomer = (id, name, alias, address, phone)=>{
         // console.log(name) variable name ini dikirim ke value modal form edit
         this.setState({
-            editCustomerData:{id,customer_name},
+            editCustomerData:{id,name, alias, address, phone},
             editCustomerModal: !this.state.editCustomerModal
 
         })
@@ -113,13 +111,13 @@ export default class Customer extends Component {
     // function untuk kirim data ke API (PUT)
     updateCustomer =()=>{
         // console.log(this.state.name)
-        let { id, customer_name } = this.state.editCustomerData;
-        console.log(customer_name)
+        let { id, name, alias, address, phone } = this.state.editCustomerData;
+        // console.log(name)
         this.setState({
             isLoading: true,
         });
         // console.log(name)
-        axios.put('http://localhost:4000/api/customer/'+id, {customer_name})
+        axios.put('http://localhost:4000/api/customer/'+id, {name,alias, address, phone})
         .then((res)=>{
             Swal.fire({
                 title: 'Data Berhasil di Update.',
@@ -129,7 +127,7 @@ export default class Customer extends Component {
             this.getCustomers()
             this.setState({
                 editCustomerModal: false,
-                editCustomerData:{customer_name},
+                editCustomerData:{name, alias, address, phone},
                 isLoading:false
             })
         })
@@ -181,14 +179,18 @@ export default class Customer extends Component {
             customerDetails = customers.map((customer)=>{
                 return <tr key={customer.id}>
                 <td>{no++}</td>
-                <td>{customer.customer_name}</td>
-                <td>{customer.status}</td>
+                <td>{customer.name}</td>
+                <td>{customer.alias}</td>
+                <td>{customer.address}</td>
+                <td>{customer.phone}</td>
                 <td>
                     <div className="d-flex align-items-center">
                         <button type="button" className="btn btn-warning mr-3" size="sm" onClick={()=>{
                             (
-                                this.editCustomer(customer.id, customer.customer_name)
-                            )}}>
+                                this.editCustomer(customer.id, customer.name,customer.alias,customer.address,customer.phone)   
+                            )
+                            }
+                            }>
                             Edit
                         </button>
                         <button type="button" className="btn btn-danger mr-3" size="sm" onClick={(e)=>{
@@ -254,7 +256,9 @@ export default class Customer extends Component {
                                         <tr>
                                         <th>No</th>
                                         <th>Nama Customer</th>
-                                        <th>Status</th>
+                                        <th>Alias</th>
+                                        <th>Address</th>
+                                        <th>Phone</th>
                                         <th>Action</th>
                                         </tr>
                                     </thead>

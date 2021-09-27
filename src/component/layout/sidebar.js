@@ -57,14 +57,14 @@ export default class Sidebar extends Component {
                                     <li class="nav-item">
                                         <a href="/customers" class="nav-link">
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>MASTER CUSTOMER</p>
+                                        <p>MASTER CUSTOMERS</p>
                                         </a>
                                     </li>
                                     <li class="nav-item">
-                                        <a href="/ikan" class="nav-link">
+                                        <a href="/product" class="nav-link">
                                         {/* <Link to="/ikan" class="nav-link"> */}
                                         <i class="far fa-circle nav-icon"></i>
-                                        <p>MASTER IKAN</p>
+                                        <p>MASTER PRODUCTS</p>
                                         {/* </Link> */}
                                         </a>
                                     </li>

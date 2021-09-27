@@ -11,8 +11,14 @@ export default class editCustomer extends Component {
                     </ModalHeader>
                     <ModalBody>
                         <FormGroup>
-                            <Label for="customer_name">Name:</Label>
-                            <Input id="customer_name" name="customer_name" value={this.props.editCustomerData.customer_name} onChange={this.props.onChangeEditCustomerHandler} />
+                            <Label for="name">Name:</Label>
+                            <Input id="name" name="name" value={this.props.editCustomerData.name} onChange={this.props.onChangeEditCustomerHandler} />
+                            <Label for="alias">Alias:</Label>
+                            <Input id="alias" name="alias" value={this.props.editCustomerData.alias} onChange={this.props.onChangeEditCustomerHandler} />
+                            <Label for="alias">Address:</Label>
+                            <Input id="address" name="address" value={this.props.editCustomerData.address} onChange={this.props.onChangeEditCustomerHandler} />
+                            <Label for="phone">Phone:</Label>
+                            <Input id="phone" name="phone" value={this.props.editCustomerData.phone} onChange={this.props.onChangeEditCustomerHandler} />
                         </FormGroup>
                     </ModalBody>
                     <ModalFooter>

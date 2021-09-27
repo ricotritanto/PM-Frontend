@@ -1,48 +1,48 @@
 import React,{Component} from 'react';
 import axios from 'axios';
-import AddIkans from './addIkans'
-import EditIkan from './editIkans'
-import UploadIkans from './uploadIkans'
+import AddProducts from './addProducts'
+import EditProducts from './editProducts'
+import UploadProducts from './uploadProducts'
 import Swal from 'sweetalert2';
 
-export default class Ikan extends Component {
+export default class Product extends Component {
     constructor(props){
         super(props);
         this.state = {
-            ikans:[],
-            newIkanData:{
+            products:[],
+            newProductData:{
                 'name':'',
                 'status':''
             },
             isLoading:false,
             status:'',
-            newIkanModal:false,
-            editIkanData:{
+            newProductModal:false,
+            editProductData:{
                 'id':'',
                 'name':'',
                 // 'status':''
             },
-            editIkanModal:false,
-            uploadIkanData:{
+            editProductModal:false,
+            uploadProductData:{
                 'name':'',
             },
             selectedFile:null,
-            uploadIkanModal:false,
+            uploadProductModal:false,
             noDataFound:''
             
         }
     }
 
     componentDidMount(){
-        this.getIkans()
+        this.getProducts()
     }
 
-    getIkans(){
-        axios.get('http://localhost:4000/api/ikan')
+    getProducts(){
+        axios.get('http://localhost:4000/api/products')
         .then((res)=>{
             if(res.status === 200){
                 this.setState({
-                    ikans: res.data ? res.data:[],
+                    products: res.data ? res.data:[],
                 })
             }
             if(res.data.status === "failed" &&  res.data.success === false)
@@ -54,32 +54,32 @@ export default class Ikan extends Component {
         })
     }
 
-    // function modal add Ikan
-    togglenewIkanModal =()=>{
+    // function modal add Product
+    togglenewProductModal =()=>{
         this.setState({
-            newIkanModal: !this.state.newIkanModal
+            newProductModal: !this.state.newProductModal
         })
     }
 
-    // handle untuk get data dari form data ikan
-    onChangeAddIkanHandler= (e)=>{
+    // handle untuk get data dari form data Product
+    onChangeAddProductHandler= (e)=>{
         console.log(e.target.value)
-        let {newIkanData} = this.state
-        newIkanData[e.target.name] = e.target.value
-        this.setState({newIkanData})
+        let {newProductData} = this.state
+        newProductData[e.target.name] = e.target.value
+        this.setState({newProductData})
     }
 
-    // function add post to api ikan 
-    addIkan =()=>{
-        axios.post('http://localhost:4000/api/ikan/create', this.state.newIkanData)
+    // function add post to api Product 
+    addProduct =()=>{
+        axios.post('http://localhost:4000/api/product/create', this.state.newProductData)
         .then((res)=>{
-            const {ikans} = this.state
-            const newIkans = [...ikans]
-            newIkans.push(res.data)
+            const {Products} = this.state
+            const newProducts = [...Products]
+            newProducts.push(res.data)
             this.setState({
-                ikans : newIkans,
-                newIkanModal:false,
-                newIkanData:{
+                Products : newProducts,
+                newProductModal:false,
+                newProductData:{
                     'name':'',
                     // 'status':''
                 }
@@ -89,55 +89,55 @@ export default class Ikan extends Component {
                 text: res.data.data,
                 type: 'success',
               }),
-              this.getIkans())
+              this.getProducts())
         })
     }
 
     // toggle tombol edit data
-    toggleEditIkanModal=()=>{
+    toggleEditProductModal=()=>{
         this.setState({
-            editIkanModal : !this.state.editIkanModal
+            editProductModal : !this.state.editProductModal
         })
     }
 
     // handler form data edit
-    onChangeEditIkanHandler=(e)=>{
+    onChangeEditProductHandler=(e)=>{
         // console.log(e.target.value)
-        let {editIkanData} = this.state
-        editIkanData[e.target.name] = e.target.value
-        this.setState({editIkanData})
+        let {editProductData} = this.state
+        editProductData[e.target.name] = e.target.value
+        this.setState({editProductData})
     }
 
     // function untuk get data edit
-    editIkan = (id, name)=>{
+    editProduct = (id, name)=>{
         // console.log(name) variable name ini dikirim ke value modal form edit
         this.setState({
-            editIkanData:{id,name},
-            editIkanModal: !this.state.editIkanModal
+            editProductData:{id,name},
+            editProductModal: !this.state.editProductModal
 
         })
         
     }
 
     // function untuk kirim data ke API (PUT)
-    updateIkan =()=>{
+    updateProduct =()=>{
         // console.log(this.state.name)
-        let { id, name } = this.state.editIkanData;
+        let { id, name } = this.state.editProductData;
         this.setState({
             isLoading: true,
         });
         // console.log(name)
-        axios.put('http://localhost:4000/api/ikan/'+id, {name})
+        axios.put('http://localhost:4000/api/Products/'+id, {name})
         .then((res)=>{
             Swal.fire({
                 title: 'Data Berhasil di Update.',
                 text: res.data.data,
                 type: 'success',
               });
-            this.getIkans()
+            this.getProducts()
             this.setState({
-                editIkanModal: false,
-                editIkanData:{name},
+                editProductModal: false,
+                editProductData:{name},
                 isLoading:false
             })
         })
@@ -148,7 +148,7 @@ export default class Ikan extends Component {
           
     }
 
-    deleteIkan = (id) => {
+    deleteProduct = (id) => {
         this.setState({
             isLoading: true,
         })
@@ -162,7 +162,7 @@ export default class Ikan extends Component {
         })
         .then((result) => {
             if (result.value === true) {
-                axios.delete('http://localhost:4000/api/ikan/'+id)
+                axios.delete('http://localhost:4000/api/Product/'+id)
                 .then((res)=>{
                     Swal.fire({
                         title: 'Data Berhasil dihapus.',
@@ -170,7 +170,7 @@ export default class Ikan extends Component {
                         type: 'success',
                     });
                     this.setState({isLoading:false})
-                    this.getIkans()
+                    this.getProducts()
                 })
             }
             if(result.dismiss === 'cancel'){
@@ -183,7 +183,7 @@ export default class Ikan extends Component {
     // toggle modal form upload
     toggleUploadModal =()=>{
         this.setState({
-            uploadIkanModal: !this.state.uploadIkanModal
+            uploadProductModal: !this.state.uploadProductModal
         })
     }
 
@@ -200,7 +200,7 @@ export default class Ikan extends Component {
         const data = new FormData()
         data.append('file', this.state.selectedFile)
         console.log(data.append('file', this.state.selectedFile));
-        // axios.post('http://localhost:4000/api/ikan', data,{
+        // axios.post('http://localhost:4000/api/Product', data,{
             
         // }).then(res=>{
         //     Swal.fire({
@@ -208,33 +208,33 @@ export default class Ikan extends Component {
         //         type: 'success',
         //     });
         //     this.setState({isLoading:false})
-        //     this.getIkans()
+        //     this.getProducts()
         // })
     }
 
 
     render(){
-        const { newIkanData,editIkanData, uploadIkanData, noDataFound, ikans} = this.state;
-        let ikanDetails = []
+        const { newProductData,editProductData, uploadProductData, noDataFound, products} = this.state;
+        let productDetails = []
         let no = 1;
-        if(ikans.length){
-            ikanDetails = ikans.map((ikan)=>{
-                return <tr key={ikan.id}>
+        if(products.length){
+            productDetails = products.map((Product)=>{
+                return <tr key={products.id}>
                 <td>{no++}</td>
-                <td>{ikan.nama_ikan}</td>
-                <td>{ikan.status}</td>
+                <td>{products.name}</td>
+                <td>{products.status}</td>
                 <td>
                     <div className="d-flex align-items-center">
                         <button type="button" className="btn btn-warning mr-3" size="sm" onClick={()=>{
                             (
-                                this.editIkan(ikan.id, ikan.nama_ikan)
+                                this.editProduct(products.id, products.name)
                             )}}>
                             Edit
                         </button>
                         <button type="button" className="btn btn-danger mr-3" size="sm" onClick={(e)=>{
                             (
-                                this.deleteIkan(ikan.id)
-                                // this.ConfirmDeleteIkan(ikan.id)
+                                this.deleteProduct(products.id)
+                                // this.ConfirmDeleteProduct(Product.id)
                             )}}>
                             Hapus
                         </button>
@@ -251,12 +251,12 @@ export default class Ikan extends Component {
                         <div className="container-fluid">
                             <div className="row mb-2">
                             <div className="col-sm-6">
-                                <h1>Master Ikan</h1>
+                                <h1>Master Product</h1>
                             </div>
                             <div className="col-sm-6">
                                 <ol className="breadcrumb float-sm-right">
                                 <li className="breadcrumb-item"><a href="/">Home</a></li>
-                                <li className="breadcrumb-item active">Master Ikan</li>
+                                <li className="breadcrumb-item active">Master Products</li>
                                 </ol>
                             </div>
                             </div>
@@ -270,29 +270,29 @@ export default class Ikan extends Component {
                             <div className="col-12">
                                 <div className="card">
                                 <div className="card-header">
-                                    <h3 className="card-title">List Data Ikan</h3>
-                                    <AddIkans 
-                                        togglenewIkanModal = {this.togglenewIkanModal}
-                                        newIkanModal = {this.state.newIkanModal}
-                                        onChangeAddIkanHandler = {this.onChangeAddIkanHandler}
-                                        addIkan = {this.addIkan}
-                                        newIkanData = {newIkanData}
+                                    <h3 className="card-title">List Data Products</h3>
+                                    <AddProducts
+                                        togglenewProductModal = {this.togglenewProductModal}
+                                        newProductModal = {this.state.newProductModal}
+                                        onChangeAddProductHandler = {this.onChangeAddProductHandler}
+                                        addProduct = {this.addProduct}
+                                        newProductData = {newProductData}
                                     />
-                                    <EditIkan
-                                        toggleEditIkanModal = {this.toggleEditIkanModal}
-                                        editIkanModal = {this.state.editIkanModal}
-                                        onChangeEditIkanHandler = {this.onChangeEditIkanHandler}
-                                        editIkan = {this.editIkan}
-                                        editIkanData = {editIkanData}
-                                        updateIkan = {this.updateIkan}
+                                    <EditProducts
+                                        toggleEditProductModal = {this.toggleEditProductModal}
+                                        editProductModal = {this.state.editProductModal}
+                                        onChangeEditProductHandler = {this.onChangeEditProductHandler}
+                                        editProduct = {this.editProduct}
+                                        editProductData = {editProductData}
+                                        updateProduct = {this.updateProduct}
                                     />
 
-                                    <UploadIkans 
+                                    <UploadProducts
                                         toggleUploadModal = {this.toggleUploadModal}
-                                        uploadIkanModal = {this.state.uploadIkanModal}
+                                        uploadProductModal = {this.state.uploadProductModal}
                                         onChangeHandler = {this.onChangeHandler}
                                         onClickUpload = {this.onClickUpload}
-                                        uploadIkanData = {uploadIkanData}
+                                        uploadProductData = {uploadProductData}
                                     />
                                 </div>
                                 <div className="form-gorup files">
@@ -306,18 +306,18 @@ export default class Ikan extends Component {
                                     <thead>
                                         <tr>
                                         <th>No</th>
-                                        <th>Nama Ikan</th>
+                                        <th>Nama Product</th>
                                         <th>Status</th>
                                         <th>Action</th>
                                         </tr>
                                     </thead>
-                                    {ikans.length === 0?(
+                                    {products.length === 0?(
                                         <tbody>
                                         <h3>{noDataFound}</h3>
                                         </tbody>
                                     ):(   
                                         <tbody>
-                                        {ikanDetails}
+                                        {productDetails}
                                         </tbody>
                                     )}
                                     </table>

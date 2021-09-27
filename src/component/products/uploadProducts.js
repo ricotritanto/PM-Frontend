@@ -1,7 +1,7 @@
 import React, { Component} from "react";
 import { Modal,Button, ModalHeader, ModalBody,ModalFooter, FormGroup, Label, Input} from 'reactstrap';
 
-export default class uploadIkans extends Component {
+export default class uploadProducts extends Component {
     render(){
         return(
             <div>
