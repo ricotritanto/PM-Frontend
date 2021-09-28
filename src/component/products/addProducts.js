@@ -16,6 +16,8 @@ export default class addProducts extends Component {
                         <FormGroup>
                             <Label for="nama_product">Name:</Label>
                             <Input id="name" name="name" value={this.props.newProductData.name} onChange={this.props.onChangeAddProductHandler} />
+                            <Label for="alias">Alias:</Label>
+                            <Input id="alias" name="alias" value={this.props.newProductData.alias} onChange={this.props.onChangeAddProductHandler} />
                         </FormGroup>
                     </ModalBody>
                     <ModalFooter>

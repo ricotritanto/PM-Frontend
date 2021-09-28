@@ -133,7 +133,6 @@ export default class Customer extends Component {
         })
         .catch((error)=>{
             this.setState({isLoading:false})
-            console.log(error.res)
         })
           
     }

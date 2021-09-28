@@ -13,6 +13,8 @@ export default class editProducts extends Component {
                         <FormGroup>
                             <Label for="nama_Product">Name:</Label>
                             <Input id="name" name="name" value={this.props.editProductData.name} onChange={this.props.onChangeEditProductHandler} />
+                            <Label for="alias">Alias:</Label>
+                            <Input id="alias" name="alias" value={this.props.editProductData.alias} onChange={this.props.onChangeEditProductHandler} />
                         </FormGroup>
                     </ModalBody>
                     <ModalFooter>
