@@ -1,0 +1,13 @@
+version: '3.0'
+services:
+    putra-manunggal-fe:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        working_dir: /home/pm/fe/src
+        container_name: putra-manunggal-fe
+        volumes:
+            - .:/home/pm/fe/src
+        ports:
+            - 3000:3000
+        tty: true
