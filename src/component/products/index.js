@@ -52,7 +52,7 @@ export default class Product extends Component {
         const { searchTitle, page, pageSize } = this.state;
         const params = this.getRequestParams(searchTitle, page, pageSize);
 
-        axios.get('http://localhost:4000/api/products',{ params })
+        axios.get('http://localhost:3001/api/products',{ params })
         .then((res)=>{
             const { products, totalPages, totalItems } = res.data;
                 this.setState({
@@ -89,7 +89,7 @@ export default class Product extends Component {
 
     // function add post to api Product 
     addProduct =()=>{
-        axios.post('http://localhost:4000/api/product', this.state.newProductData)
+        axios.post('http://localhost:3001/api/product', this.state.newProductData)
         .then((res)=>{
             const {products} = this.state
             const newProducts = [...products]

@@ -1,7 +1,43 @@
-import React, { Component } from 'react'
+import React, { Component } from 'react';
+import CanvasJSReact from './canvas/canvasjs.react';
+var CanvasJS = CanvasJSReact.CanvasJS;
+var CanvasJSChart = CanvasJSReact.CanvasJSChart;
 
+var dataPoints=[]
 export default class menu extends Component {
+    componentDidMount(){
+		var chart = this.chart;
+		fetch('https://canvasjs.com/data/gallery/react/nifty-stock-price.json')
+		.then(function(response) {
+			return response.json();
+		})
+		.then(function(data) {
+			for (var i = 0; i < data.length; i++) {
+				dataPoints.push({
+					x: new Date(data[i].x),
+					y: data[i].y
+				});
+			}
+			chart.render();
+		});
+	}
     render() {
+        const options = {
+			theme: "light2",
+			title: {
+				text: "Stock Price of NIFTY 50"
+			},
+			axisY: {
+				title: "Price in USD",
+				prefix: "$"
+			},
+			data: [{
+				type: "line",
+				xValueFormatString: "MMM YYYY",
+				yValueFormatString: "$#,##0.00",
+				dataPoints: dataPoints
+			}]
+		}
         return (
             <div>
                {/* Content Wrapper. Contains page content */}
@@ -84,6 +120,28 @@ export default class menu extends Component {
                                 </div>
                             </div>
                             {/* ./col */}
+                            </div>
+                        </div>
+                       {/*solid sales graph */}
+                        <div class="card bg-gradient-info">
+                            <div class="card-header border-0">
+                                <h3 class="card-title">
+                                <i class="fas fa-th mr-1"></i>
+                                Sales Graph
+                                </h3>
+
+                                <div class="card-tools">
+                                <button type="button" class="btn bg-info btn-sm" data-card-widget="collapse">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <button type="button" class="btn bg-info btn-sm" data-card-widget="remove">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                {/* <canvas class="chart" id="line-chart" style={{style:"min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"}}></canvas> */}
+                                <CanvasJSChart options = {options} onRef={ref => this.chart = ref}/>
                             </div>
                         </div>
                     </section>

@@ -35,7 +35,7 @@ export default class Customer extends Component {
     }
 
     getCustomers(){
-        axios.get('http://localhost:4000/api/customers')
+        axios.get('http://localhost:3001/api/customers')
         .then((res)=>{
             this.setState({
             customers: res.data ? res.data:[],
