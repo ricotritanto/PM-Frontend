@@ -4,7 +4,7 @@ import AddProducts from './addProducts'
 import EditProducts from './editProducts'
 import UploadProducts from './uploadProducts'
 import Swal from 'sweetalert2';
-import Pagination from "@material-ui/lab/Pagination";
+import ReactPaginate from 'react-paginate';
 
 export default class Product extends Component {
     constructor(props){
@@ -13,13 +13,11 @@ export default class Product extends Component {
         this.handlePageChange = this.handlePageChange.bind(this);
         this.state = {
             products:[],
-            currentTutorial: null,
-            currentIndex: -1,
-            searchTitle: "",
-
+            offset: 0,
             page: 1,
             count: 0,
-            pageSize: 3,
+            per_page: 6,
+            totalPages: 0,
             newProductData:{
                 'name':'',
                 'alias':''
@@ -34,32 +32,30 @@ export default class Product extends Component {
             },
             editProductModal:false,
             uploadProductData:{
-                'name':'',
-                'alias':''
             },
             selectedFile:null,
             uploadProductModal:false,
             noDataFound:''            
         }
-        this.pageSizes = [3, 6, 9];
     }
 
     componentDidMount(){
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.props.token}`
         this.getProducts()
     }
 
     getProducts(){
-        const { searchTitle, page, pageSize } = this.state;
-        const params = this.getRequestParams(searchTitle, page, pageSize);
-
-        axios.get('http://localhost:3001/api/products',{ params })
+        const { page, per_page } = this.state;
+        axios.get('http://localhost:3001/api/products?page='+page+'&per_page='+per_page+'',{},)
         .then((res)=>{
-            const { products, totalPages, totalItems } = res.data;
-                this.setState({
-                    products: products ? products:[],
-                    count:totalPages,
-                    totalItems: totalItems
-                })
+            const products = res.data.result.items
+            const count = res.data.result.count
+            this.setState({
+                products: products ? products:[],
+                count:count,
+                totalPages:Math.ceil(count/per_page)
+            })
+
         })
     }
 
@@ -72,9 +68,11 @@ export default class Product extends Component {
 
     // handle untuk get data dari form data Product
     onChangeAddProductHandler= (e)=>{
+        e.preventDefault();
         let {newProductData} = this.state
         newProductData[e.target.name] = e.target.value
         this.setState({newProductData})
+
     }
 
     setActiveTutorial(tutorial, index) {
@@ -89,26 +87,38 @@ export default class Product extends Component {
 
     // function add post to api Product 
     addProduct =()=>{
-        axios.post('http://localhost:3001/api/product', this.state.newProductData)
-        .then((res)=>{
-            const {products} = this.state
-            const newProducts = [...products]
-            newProducts.push(res.data)
-            this.setState({
-                Products : newProducts,
-                newProductModal:false,
-                newProductData:{
-                    'name':'',
-                    'alias':''
-                }
-            },()=>
-            Swal.fire({
-                title: 'Data Berhasil diinput.',
-                text: res.data.data,
-                type: 'success',
-              }),
-              this.getProducts())
-        })
+            axios.post('http://localhost:3001/api/products', this.state.newProductData)
+            .then((res)=>{
+                const {products} = this.state
+                const newProducts = [...products]
+                newProducts.push(res.data)
+                this.setState({
+                    Products : newProducts,
+                    newProductModal:false,
+                    newProductData:{
+                        'name':'',
+                        'alias':''
+                    }
+                },()=>
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Data Berhasil diinput.',
+                    text: res.data.data,
+                    type: 'success',
+                    timer:1500
+                  }),
+                  this.getProducts())
+            })
+            .catch((error)=>{
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: error.response.data.message,
+                    timer:2000
+                  });
+                this.setState({isLoading:false, newProductModal:false})
+            })
+       
     }
 
     // toggle tombol edit data
@@ -136,6 +146,18 @@ export default class Product extends Component {
         
     }
 
+    // onKeyPress handle
+    onKeyPressAdd = (e) => {
+        if(e.which === 13) {
+          this.addProduct();
+        }
+    }
+
+    onKeyPressEdit = (e) => {
+        if(e.which === 13) {
+          this.updateProduct();
+        }
+    }
     // function untuk kirim data ke API (PUT)
     updateProduct =()=>{
         // console.log(this.state.name)
@@ -144,12 +166,14 @@ export default class Product extends Component {
             isLoading: true,
         });
         // console.log(name)
-        axios.put('http://localhost:4000/api/Products/'+id, {name, alias})
+        axios.put('http://localhost:3001/api/products/'+id, {name, alias})
         .then((res)=>{
             Swal.fire({
+                icon: 'success',
                 title: 'Data Berhasil di Update.',
                 text: res.data.data,
                 type: 'success',
+                timer: 1500
               });
             this.getProducts()
             this.setState({
@@ -159,7 +183,13 @@ export default class Product extends Component {
             })
         })
         .catch((error)=>{
-            this.setState({isLoading:false})
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: error.response.data.message,
+                timer:2000
+              });
+            this.setState({isLoading:false, editProductModal:false})
         })
           
     }
@@ -178,12 +208,13 @@ export default class Product extends Component {
         })
         .then((result) => {
             if (result.value === true) {
-                axios.delete('http://localhost:4000/api/Product/'+id)
+                axios.delete('http://localhost:3001/api/products/'+id)
                 .then((res)=>{
                     Swal.fire({
                         title: 'Data Berhasil dihapus.',
                         text: res.data.data,
-                        type: 'success',
+                        icon: 'success',
+                        timer:1500
                     });
                     this.setState({isLoading:false})
                     this.getProducts()
@@ -204,75 +235,110 @@ export default class Product extends Component {
     }
 
     // function untuk upload file
-    onChangeHandler=e=>{
+    onChangeHandler=(e)=>{
+        // console.log(e.target.files[0])
         this.setState({
             selectedFile:e.target.files[0],
             loaded:0,
+            filetype: 'products'
         })
     }
 
     onClickUpload =()=>{
         const data = new FormData()
+        data.append('file_type',this.state.filetype)
         data.append('file', this.state.selectedFile)
+        axios.post('http://localhost:3001/api/file/upload', data, {
+            headers: {
+              "Content-Type": "multipart/form-data"
+            }
+        })
+        .then((res)=>{
+            Swal.fire({
+                title: 'Data Berhasil di upload.',
+                text: res.data.data,
+                icon: 'success',
+                timer: 1500
+              });
+            this.setState({
+                uploadProductModal: false,  
+                isLoading:false
+            })
+            this.getProducts()
+        })
+        .catch((error) => {
+            // error response
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: error.response.data.message
+            });
+            this.setState({
+                uploadProductModal: false,  
+                isLoading:false
+            })
+            this.getProducts()
+        })
     }
 
     // setting pagination
-    handlePageChange(event, value) {
-        this.setState(
-            {
-            page: value,
+    handlePageChange(e) {
+        const selectedPage = e.selected + 1
+        const offset = selectedPage * this.state.per_page
+        this.setState({
+            page: selectedPage,
+            offset: offset
             },
             () => {
-            this.getProducts();
+                this.getProducts();
             }
         );
     }
 
-    getRequestParams(searchTitle, page, pageSize) {
-        let params = {};
+    // getRequestParams(searchTitle, page, pageSize) {
+    //     let params = {};
 
-        if (searchTitle) {
-            params["title"] = searchTitle;
-        }
+    //     if (searchTitle) {
+    //         params["title"] = searchTitle;
+    //     }
 
-        if (page) {
-            params["page"] = page - 1;
-        }
+    //     if (page) {
+    //         params["page"] = page - 1;
+    //     }
 
-        if (pageSize) {
-            params["size"] = pageSize;
-        }
+    //     if (pageSize) {
+    //         params["size"] = pageSize;
+    //     }
 
-        return params;
-    }
+    //     return params;
+    // }
     
     
 
 
     render(){
-        const { newProductData,editProductData,
-                uploadProductData, noDataFound, 
-                products, count, pageSize,currentIndex,currentProducts, page,totalItems} = this.state;
+        const { newProductData,editProductData, uploadProductData, products} = this.state;
         let productDetails = []
-        let no = 1;
         if(products.length){
             productDetails = products.map((product)=>{
                 return <tr key={product.id}>
-                <td>{no++}</td>
+                <td>#</td>
                 <td>{product.name}</td>
                 <td>{product.alias}</td>
                 <td>
                     <div className="d-flex align-items-center">
-                        <button type="button" className="btn btn-warning mr-3" size="sm" onClick={()=>{
+                        <button type="button" className="btn btn-info btn-sm mr-3" size="sm" onClick={()=>{
                             (
                                 this.editProduct(product.id, product.name,product.alias)
                             )}}>
+                            <i className="fas fa-pencil-alt"></i> 
                             Edit
                         </button>
-                        <button type="button" className="btn btn-danger mr-3" size="sm" onClick={(e)=>{
+                        <button type="button" className="btn btn-danger btn-sm mr-3" size="sm" onClick={(e)=>{
                             (
                                 this.deleteProduct(product.id)
-                            )}}>
+                            )}}><i className="fas fa-trash">
+                            </i>
                             Hapus
                         </button>
                     </div>
@@ -283,12 +349,12 @@ export default class Product extends Component {
         
         return(
             <div>
-                <div class="content-wrapper">
+                <div className="content-wrapper">
                     <section className="content-header">
                         <div className="container-fluid">
                             <div className="row mb-2">
                                 <div className="col-sm-6">
-                                    <h1>Master Product</h1>
+                                    <h1>Master Products</h1>
                                 </div>
                                 <div className="col-sm-6">
                                     <ol className="breadcrumb float-sm-right">
@@ -307,11 +373,13 @@ export default class Product extends Component {
                                 <div className="col-12">
                                     <div className="card">
                                         <div className="card-header">
-                                            <h3 className="card-title">List Data Products</h3>
+                                            <h3 className="card-title"><strong>List Data Products</strong></h3>
                                             <AddProducts
                                                 togglenewProductModal = {this.togglenewProductModal}
                                                 newProductModal = {this.state.newProductModal}
                                                 onChangeAddProductHandler = {this.onChangeAddProductHandler}
+                                                onChangeEditProductHandler = {this.onChangeEditProductHandler}
+                                                onKeyPressAdd = {this.onKeyPressAdd}
                                                 addProduct = {this.addProduct}
                                                 newProductData = {newProductData}
                                             />
@@ -319,38 +387,34 @@ export default class Product extends Component {
                                                 toggleEditProductModal = {this.toggleEditProductModal}
                                                 editProductModal = {this.state.editProductModal}
                                                 onChangeEditProductHandler = {this.onChangeEditProductHandler}
+                                                onKeyPressEdit = {this.onKeyPressEdit}
                                                 editProduct = {this.editProduct}
                                                 editProductData = {editProductData}
                                                 updateProduct = {this.updateProduct}
                                             />
-
                                             <UploadProducts
                                                 toggleUploadModal = {this.toggleUploadModal}
                                                 uploadProductModal = {this.state.uploadProductModal}
                                                 onChangeHandler = {this.onChangeHandler}
                                                 onClickUpload = {this.onClickUpload}
                                                 uploadProductData = {uploadProductData}
-                                            />
-                                        </div>
-                                        <div className="form-gorup files">
-                                            <label>Upload file:</label>
-                                            <input type="file" className="form-control" name="file" onChange={this.onChangeHandler}/>
-                                            <button type="button" class="btn btn-success btn-block" onClick={this.onClickUpload}>Upload</button> 
-                                        </div>
-                                        {/* /.card-header */}
+                                            />            
+                                            <br/><br/>
+                                            <li>Total Products :  <a className="text-center"> {this.state.count}</a>  </li>                      
+                                        </div>                                        
                                         <div className="card-body">
                                             <table id="example2" className="table table-bordered table-hover">
                                             <thead>
                                                 <tr>
-                                                <th>No</th>
-                                                <th>Nama Product</th>
+                                                <th>#</th>
+                                                <th>Product Name</th>
                                                 <th>Alias</th>
                                                 <th>Action</th>
                                                 </tr>
                                             </thead>
                                             {products.length === 0?(
                                                 <tbody>
-                                                <h3>{noDataFound}</h3>
+                                                {/* <h3>{noDataFound}</h3> */}
                                                 </tbody>
                                             ):(   
                                                 <tbody>
@@ -359,29 +423,29 @@ export default class Product extends Component {
                                             )}
                                             </table>
                                         </div>                                        
-                                        <div className="mt-3">
-                                            Total Data: {totalItems}
-                                            {/* <select onChange={this.handlePageSizeChange} value={pageSize}>
-                                            {this.pageSizes.map((size) => (
-                                                <option key={size} value={size}>
-                                                {size}
-                                                </option>
-                                            ))}
-                                            </select> */}
-                                            <Pagination
-                                            className="my-3"
-                                            // prevPageText="Prev"
-                                            // nextPageText="Next"
-                                            // firstPageText="First"
-                                            // lastPageText="Last"
-                                            count={count}
-                                            page={page}
-                                            siblingCount={1}
-                                            boundaryCount={1}
-                                            variant="outlined"
-                                            shape="rounded"
-                                            onChange={this.handlePageChange}
-                                            />
+                                        <div className="card-footer clearfix">                                    
+                                            Total Pages: {this.state.totalPages}
+                                            <ul className="pagination pagination-sm m-0 float-right">
+                                                <ReactPaginate
+                                                    previousLabel={"prev"}
+                                                    nextLabel={"next"}
+                                                    breakLabel={"..."}
+                                                    breakClassName={"break-me"}
+                                                    pageCount={this.state.totalPages}
+                                                    marginPagesDisplayed={2}
+                                                    pageRangeDisplayed={2}
+                                                    containerClassName={"pagination"}
+                                                    previousClassName={"page-item"}
+                                                    previousLinkClassName={"page-link"}
+                                                    nextClassName={"page-item"}
+                                                    nextLinkClassName={"page-link"}
+                                                    activeLinkClassName={"page-link"}
+                                                    activeClassName={"active"}
+                                                    pageClassName={"page-item"}
+                                                    pageLinkClassName={"page-link"}
+                                                    onPageChange={this.handlePageChange}
+                                                />
+                                            </ul>
                                         </div>
                                     </div>
                                 </div>

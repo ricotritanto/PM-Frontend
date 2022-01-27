@@ -14,8 +14,14 @@ export default class addCustomer extends Component {
                     </ModalHeader>
                     <ModalBody>
                         <FormGroup>
-                            <Label for="customer_name">Name:</Label>
-                            <Input id="customer_name" name="customer_name" value={this.props.newCustomerData.customer_name} onChange={this.props.onChangeAddCustomerHandler} />
+                            <Label for="name">Name:</Label>
+                            <Input id="name" name="name" onChange={this.props.onChangeAddCustomerHandler} onKeyPress={this.props.onKeyPressAdd}  />
+                            <Label for="alias">Alias:</Label>
+                            <Input id="alias" name="alias" onChange={this.props.onChangeAddCustomerHandler} onKeyPress={this.props.onKeyPressAdd}  />
+                            <Label for="alias">Address:</Label>
+                            <Input id="address" name="address" onChange={this.props.onChangeAddCustomerHandler} onKeyPress={this.props.onKeyPressAdd}  />
+                            <Label for="phone">Phone:</Label>
+                            <Input id="phone" name="phone" onChange={this.props.onChangeAddCustomerHandler} onKeyPress={this.props.onKeyPressAdd} />
                         </FormGroup>
                     </ModalBody>
                     <ModalFooter>

@@ -2,13 +2,22 @@ import React,{Component} from 'react';
 import axios from 'axios';
 import AddCustomer from './addCustomer'
 import EditCustomer from './editCustomer'
+import UploadCustomers from './uploadCustomers'
 import Swal from 'sweetalert2';
+import ReactPaginate from 'react-paginate';
 
 export default class Customer extends Component {
     constructor(props){
         super(props);
+        this.getCustomers = this.getCustomers.bind(this);
+        this.handlePageChange = this.handlePageChange.bind(this);
         this.state = {
             customers:[],
+            offset: 0,
+            page: 1,
+            count: 0,
+            per_page: 6,
+            totalPages: 0,
             newCustomerData:{
                 'name':'',
                 'alias':'',
@@ -26,24 +35,46 @@ export default class Customer extends Component {
                 'phone':''
             },
             editCustomerModal:false,
+            uploadCustomerData:{},
+            selectedFile:null,
+            uploadCustomerModal:false,
             noDataFound:''
         }
     }
 
     componentDidMount(){
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.props.token}`
         this.getCustomers()
     }
 
     getCustomers(){
-        axios.get('http://localhost:3001/api/customers')
+        const {page, per_page} = this.state;
+        axios.get('http://localhost:3001/api/customers?page='+page+'&per_page='+per_page+'',{},)
         .then((res)=>{
+            const customers = res.data.result.items
+            const count = res.data.result.count
             this.setState({
-            customers: res.data ? res.data:[],
+                customers: customers ? customers:[],
+                count:count,
+                totalPages:Math.ceil(count/per_page)
             })
         })
     }
-
+     // setting pagination
+     handlePageChange(e) {
+        const selectedPage = e.selected + 1
+        const offset = selectedPage * this.state.per_page
+        this.setState({
+            page: selectedPage,
+            offset: offset
+            },
+            () => {
+                this.getCustomers();
+            }
+        );
+    }
     // function modal add customer
+    
     togglenewCustomerModal =()=>{
         this.setState({
             newCustomerModal: !this.state.newCustomerModal
@@ -52,6 +83,7 @@ export default class Customer extends Component {
 
     // handle untuk get data dari form data customer
     onChangeAddCustomerHandler= (e)=>{
+        e.preventDefault();
         let {newCustomerData} = this.state
         newCustomerData[e.target.name] = e.target.value
         this.setState({newCustomerData})
@@ -59,7 +91,8 @@ export default class Customer extends Component {
 
     // function add post to api customer 
     addCustomer =()=>{
-        axios.post('http://localhost:4000/api/customer/create', this.state.newCustomerData)
+        console.log(this.state.newCustomerData)
+        axios.post('http://localhost:3001/api/customers', this.state.newCustomerData)
         .then((res)=>{
             const {customers} = this.state
             const newCustomers = [...customers]
@@ -81,6 +114,11 @@ export default class Customer extends Component {
               }),
               this.getCustomers())
         })
+    }
+    onKeyPressEdit = (e) => {
+        if(e.which === 13) {
+          this.updateCustomer();
+        }
     }
 
     // toggle tombol edit data
@@ -117,7 +155,7 @@ export default class Customer extends Component {
             isLoading: true,
         });
         // console.log(name)
-        axios.put('http://localhost:4000/api/customer/'+id, {name,alias, address, phone})
+        axios.put('http://localhost:3001/api/customers/'+id, {name,alias, address, phone})
         .then((res)=>{
             Swal.fire({
                 title: 'Data Berhasil di Update.',
@@ -132,7 +170,12 @@ export default class Customer extends Component {
             })
         })
         .catch((error)=>{
-            this.setState({isLoading:false})
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: error.response.data.message
+              });
+            this.setState({isLoading:false, editCustomerModal:false})
         })
           
     }
@@ -151,7 +194,7 @@ export default class Customer extends Component {
         })
         .then((result) => {
             if (result.value === true) {
-                axios.delete('http://localhost:4000/api/customer/'+id)
+                axios.delete('http://localhost:3001/api/customers/'+id)
                 .then((res)=>{
                     Swal.fire({
                         title: 'Data Berhasil dihapus.',
@@ -169,9 +212,59 @@ export default class Customer extends Component {
         });
     }
 
+    toggleUploadModal = ()=>{
+        this.setState({
+            uploadCustomerModal: !this.state.uploadCustomerModal
+        })
+    }
+
+    onChangeHandler=(e)=>{
+        this.setState({
+            selectedFile:e.target.files[0],
+            loaded:0,
+            filetype:'customers'
+        })
+    }
+
+    onClickUpload = () =>{
+        const data = new FormData()
+        data.append('file_type', this.state.filetype)
+        data.append('file', this.state.selectedFile)
+        axios.post('http://localhost:3001/api/file/upload', data, {
+            headers:{
+                "Content-Type": "multipart/form-data"
+            }
+        })
+        .then((res)=>{
+            Swal.fire({
+                title: 'Data Berhasil di upload.',
+                text: res.data.data,
+                icon: 'success',
+                timer: 1500
+              });
+            this.setState({
+                uploadCustomerModal: false,  
+                isLoading:false
+            })
+            this.getCustomers()
+        })
+        .catch((error) => {
+            // error response
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: error.response.data.message
+            });
+            this.setState({
+                uploadCustomerModal: false,  
+                isLoading:false
+            })
+            this.getCustomers()
+        })
+    }
 
     render(){
-        const { newCustomerData,editCustomerData, noDataFound, customers} = this.state;
+        const { newCustomerData,editCustomerData,uploadCustomerData, customers} = this.state;
         let customerDetails = []
         let no = 1;
         if(customers.length){
@@ -207,7 +300,7 @@ export default class Customer extends Component {
         
         return(
             <div>
-                <div class="content-wrapper">
+                <div className="content-wrapper">
                     <section className="content-header">
                         <div className="container-fluid">
                             <div className="row mb-2">
@@ -236,6 +329,7 @@ export default class Customer extends Component {
                                         togglenewCustomerModal = {this.togglenewCustomerModal}
                                         newCustomerModal = {this.state.newCustomerModal}
                                         onChangeAddCustomerHandler = {this.onChangeAddCustomerHandler}
+                                        onKeyPressAdd = {this.onKeyPressAdd}
                                         addCustomer = {this.addCustomer}
                                         newCustomerData = {newCustomerData}
                                     />
@@ -246,6 +340,13 @@ export default class Customer extends Component {
                                         editCustomer = {this.editCustomer}
                                         editCustomerData = {editCustomerData}
                                         updateCustomer = {this.updateCustomer}
+                                    />
+                                    <UploadCustomers
+                                        toggleUploadModal = {this.toggleUploadModal}
+                                        uploadCustomerModal = {this.state.uploadCustomerModal}
+                                        onChangeHandler = {this.onChangeHandler}
+                                        onClickUpload = {this.onClickUpload}
+                                        uploadCustomerData = {uploadCustomerData}
                                     />
                                 </div>
                                 {/* /.card-header */}
@@ -263,7 +364,7 @@ export default class Customer extends Component {
                                     </thead>
                                     {customers.length === 0?(
                                         <tbody>
-                                        <h3>{noDataFound}</h3>
+                                        {/* <h3>{noDataFound}</h3> */}
                                         </tbody>
                                     ):(   
                                         <tbody>
@@ -271,6 +372,30 @@ export default class Customer extends Component {
                                         </tbody>
                                     )}
                                     </table>
+                                </div>
+                                <div className="card-footer clearfix">                                    
+                                    Total Pages: {this.state.totalPages}
+                                    <ul className="pagination pagination-sm m-0 float-right">
+                                        <ReactPaginate
+                                            previousLabel={"prev"}
+                                            nextLabel={"next"}
+                                            breakLabel={"..."}
+                                            breakClassName={"break-me"}
+                                            pageCount={this.state.totalPages}
+                                            marginPagesDisplayed={2}
+                                            pageRangeDisplayed={2}
+                                            containerClassName={"pagination"}
+                                            previousClassName={"page-item"}
+                                            previousLinkClassName={"page-link"}
+                                            nextClassName={"page-item"}
+                                            nextLinkClassName={"page-link"}
+                                            activeLinkClassName={"page-link"}
+                                            activeClassName={"active"}
+                                            pageClassName={"page-item"}
+                                            pageLinkClassName={"page-link"}
+                                            onPageChange={this.handlePageChange}
+                                        />
+                                    </ul>
                                 </div>
                                 </div>
                             </div>

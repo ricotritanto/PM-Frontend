@@ -5,7 +5,7 @@ export default class addProducts extends Component {
     render(){
         return(
             <div>
-                <Button className="float-right mb-4" color="primary" onClick={this.props.togglenewProductModal}>
+                <Button className="float-right mb-4" color="success" onClick={this.props.togglenewProductModal}>
                     Add products
                 </Button>
                 <Modal isOpen={this.props.newProductModal} toggle={this.props.togglenewProductModal}>
@@ -15,9 +15,9 @@ export default class addProducts extends Component {
                     <ModalBody>
                         <FormGroup>
                             <Label for="nama_product">Name:</Label>
-                            <Input id="name" name="name" value={this.props.newProductData.name} onChange={this.props.onChangeAddProductHandler} />
+                            <Input id="name" name="name" onChange={this.props.onChangeAddProductHandler} onKeyPress={this.props.onKeyPressAdd} />
                             <Label for="alias">Alias:</Label>
-                            <Input id="alias" name="alias" value={this.props.newProductData.alias} onChange={this.props.onChangeAddProductHandler} />
+                            <Input id="alias" name="alias" onChange={this.props.onChangeAddProductHandler} onKeyPress={this.props.onKeyPressAdd} />
                         </FormGroup>
                     </ModalBody>
                     <ModalFooter>

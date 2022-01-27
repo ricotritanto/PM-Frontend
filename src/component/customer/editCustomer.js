@@ -12,13 +12,13 @@ export default class editCustomer extends Component {
                     <ModalBody>
                         <FormGroup>
                             <Label for="name">Name:</Label>
-                            <Input id="name" name="name" value={this.props.editCustomerData.name} onChange={this.props.onChangeEditCustomerHandler} />
+                            <Input id="name" name="name" value={this.props.editCustomerData.name} onChange={this.props.onChangeEditCustomerHandler} onKeyPress={this.props.onKeyPressEdit}/>
                             <Label for="alias">Alias:</Label>
-                            <Input id="alias" name="alias" value={this.props.editCustomerData.alias} onChange={this.props.onChangeEditCustomerHandler} />
+                            <Input id="alias" name="alias" value={this.props.editCustomerData.alias} onChange={this.props.onChangeEditCustomerHandler} onKeyPress={this.props.onKeyPressEdit}/>
                             <Label for="alias">Address:</Label>
-                            <Input id="address" name="address" value={this.props.editCustomerData.address} onChange={this.props.onChangeEditCustomerHandler} />
+                            <Input id="address" name="address" value={this.props.editCustomerData.address} onChange={this.props.onChangeEditCustomerHandler} onKeyPress={this.props.onKeyPressEdit}/>
                             <Label for="phone">Phone:</Label>
-                            <Input id="phone" name="phone" value={this.props.editCustomerData.phone} onChange={this.props.onChangeEditCustomerHandler} />
+                            <Input id="phone" name="phone" value={this.props.editCustomerData.phone} onChange={this.props.onChangeEditCustomerHandler} onKeyPress={this.props.onKeyPressEdit}/>
                         </FormGroup>
                     </ModalBody>
                     <ModalFooter>

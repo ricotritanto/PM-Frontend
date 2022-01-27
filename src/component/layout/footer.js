@@ -4,10 +4,10 @@ export default class Footer extends Component {
     render(){
         return(
             <Fragment>
-                    <footer class="main-footer">
+                    <footer className="main-footer">
                         <strong>Copyright &copy; 2021 <a href="https://adminlte.io">Putra Manunggal</a>.</strong>
                         All rights reserved.
-                        <div class="float-right d-none d-sm-inline-block">
+                        <div className="float-right d-none d-sm-inline-block">
                         <b>Version</b> 3.1.0
                         </div>
                     </footer>

@@ -1,26 +1,46 @@
 import React, { Component } from 'react';
+import axios from 'axios';
 import CanvasJSReact from './canvas/canvasjs.react';
-var CanvasJS = CanvasJSReact.CanvasJS;
+// import { useHistory } from 'react-router-dom';
 var CanvasJSChart = CanvasJSReact.CanvasJSChart;
 
 var dataPoints=[]
 export default class menu extends Component {
-    componentDidMount(){
-		var chart = this.chart;
-		fetch('https://canvasjs.com/data/gallery/react/nifty-stock-price.json')
-		.then(function(response) {
-			return response.json();
-		})
-		.then(function(data) {
-			for (var i = 0; i < data.length; i++) {
-				dataPoints.push({
-					x: new Date(data[i].x),
-					y: data[i].y
-				});
-			}
-			chart.render();
-		});
-	}
+    constructor(props){
+        super(props);
+        this.state = {
+            count : 0,
+        }
+
+    }
+
+        componentDidMount(){
+            var chart = this.chart;
+            fetch('https://canvasjs.com/data/gallery/react/nifty-stock-price.json')
+            .then(function(response) {
+                return response.json();
+            })
+            .then(function(data) {
+                for (var i = 0; i < data.length; i++) {
+                    dataPoints.push({
+                        x: new Date(data[i].x),
+                        y: data[i].y
+                    });
+                }
+                chart.render();
+            });
+            this.getProducts()
+        }
+        getProducts(){
+            axios.get('http://localhost:3001/api/products')
+            .then((res)=>{
+                const count = res.data.result.count
+                this.setState({
+                    count:count,
+                })
+
+            })
+        }
     render() {
         const options = {
 			theme: "light2",
@@ -68,13 +88,13 @@ export default class menu extends Component {
                                 {/* small box */}
                                 <div className="small-box bg-info">
                                 <div className="inner">
-                                    <h3>150</h3>
-                                    <p>New Orders</p>
+                                    <h3>{this.state.count}</h3>
+                                    <p>Products</p>
                                 </div>
                                 <div className="icon">
                                     <i className="ion ion-bag" />
                                 </div>
-                                <a href="abc" className="small-box-footer">More info <i className="fas fa-arrow-circle-right" /></a>
+                                <a href="/product" className="small-box-footer">More info <i className="fas fa-arrow-circle-right" /></a>
                                 </div>
                             </div>
                             {/* ./col */}
@@ -83,12 +103,12 @@ export default class menu extends Component {
                                 <div className="small-box bg-success">
                                 <div className="inner">
                                     <h3>53<sup style={{fontSize: 20}}>%</sup></h3>
-                                    <p>Bounce Rate</p>
+                                    <p>Customers</p>
                                 </div>
                                 <div className="icon">
-                                    <i className="ion ion-stats-bars" />
+                                    <i className="fas fa-user-plus"/>
                                 </div>
-                                <a href="abc" className="small-box-footer">More info <i className="fas fa-arrow-circle-right" /></a>
+                                <a href="/customers" className="small-box-footer">More info <i className="fas fa-arrow-circle-right" /></a>
                                 </div>
                             </div>
                             {/* ./col */}
@@ -111,7 +131,7 @@ export default class menu extends Component {
                                 <div className="small-box bg-danger">
                                 <div className="inner">
                                     <h3>65</h3>
-                                    <p>Unique Visitors</p>
+                                    <p>month's Total </p>
                                 </div>
                                 <div className="icon">
                                     <i className="ion ion-pie-graph" />
@@ -123,23 +143,23 @@ export default class menu extends Component {
                             </div>
                         </div>
                        {/*solid sales graph */}
-                        <div class="card bg-gradient-info">
-                            <div class="card-header border-0">
-                                <h3 class="card-title">
-                                <i class="fas fa-th mr-1"></i>
+                        <div className="card bg-gradient-info">
+                            <div className="card-header border-0">
+                                <h3 className="card-title">
+                                <i className="fas fa-th mr-1"></i>
                                 Sales Graph
                                 </h3>
 
-                                <div class="card-tools">
-                                <button type="button" class="btn bg-info btn-sm" data-card-widget="collapse">
-                                    <i class="fas fa-minus"></i>
+                                <div className="card-tools">
+                                <button type="button" className="btn bg-info btn-sm" data-card-widget="collapse">
+                                    <i className="fas fa-minus"></i>
                                 </button>
-                                <button type="button" class="btn bg-info btn-sm" data-card-widget="remove">
-                                    <i class="fas fa-times"></i>
+                                <button type="button" className="btn bg-info btn-sm" data-card-widget="remove">
+                                    <i className="fas fa-times"></i>
                                 </button>
                                 </div>
                             </div>
-                            <div class="card-body">
+                            <div className="card-body">
                                 {/* <canvas class="chart" id="line-chart" style={{style:"min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"}}></canvas> */}
                                 <CanvasJSChart options = {options} onRef={ref => this.chart = ref}/>
                             </div>
