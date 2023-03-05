@@ -5,7 +5,7 @@ export default class addCustomer extends Component {
     render(){
         return(
             <div>
-                <Button className="float-right mb-4" color="primary" onClick={this.props.togglenewCustomerModal}>
+                <Button className="float-right mb-1" color="primary" onClick={this.props.togglenewCustomerModal}>
                     Add Customer
                 </Button>
                 <Modal isOpen={this.props.newCustomerModal} toggle={this.props.togglenewCustomerModal}>

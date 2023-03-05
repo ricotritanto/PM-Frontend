@@ -9,7 +9,7 @@ export default class Sidebar extends Component {
                     <a href="/" className="brand-link">
                         <img src="dist/img/AdminLTELogo.png" alt="AdminLTE Logo" className="brand-image img-circle elevation-3" />
 
-                        <span className="brand-text font-weight-light">AdminLTE 3</span>
+                        <span className="brand-text font-weight-light">CPANEL Admin</span>
                     </a>
 
                     <div className="sidebar">
@@ -18,12 +18,11 @@ export default class Sidebar extends Component {
                                 <img src="dist/img/user2-160x160.jpg" className="img-circle elevation-2" alt="User" />
                             </div>
                             <div className="info">
-                                <a href="abc" className="d-block">Alexander Pierce</a>
+                                <a href="abc" className="d-block">Bagoes Pete</a>
                             </div>
                         </div>
 
-                        <div className="form-inline">
-
+                        {/* <div className="form-inline">
                             <div className="input-group" data-widget="sidebar-search">
                             <input className="form-control form-control-sidebar" type="search" placeholder="Search" aria-label="Search" />
                                 <div className="input-group-append">
@@ -32,7 +31,7 @@ export default class Sidebar extends Component {
                                     </button>
                                 </div>
                             </div>
-                        </div>
+                        </div> */}
                         
                         <nav className="mt-2">
                             <ul className="nav nav-pills nav-sidebar flex-column" data-widget="treeview" role="menu" data-accordion="false">
@@ -70,7 +69,7 @@ export default class Sidebar extends Component {
                                     </li>
                                     </ul>
                                 </li>
-                                <li className="nav-header">REPORT</li>
+                                <li className="nav-header">TRANSACTIONS</li>
                                 <li className="nav-item">
                                     <a href="/delivery_orders" className="nav-link">
                                     <i className="far fa-circle nav-icon"></i>

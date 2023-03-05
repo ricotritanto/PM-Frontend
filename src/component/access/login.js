@@ -16,7 +16,7 @@ function Login() {
     const [password, setPassword] = useState("");
 
     //define state validation
-    const [setValidation] = useState([]);
+    // const [setValidation] = useState([]);
 
     //define history
     const history = useHistory();
@@ -41,6 +41,7 @@ function Login() {
         .then((response) => {
             // console.log(response.data)
             //set token on localStorage
+            localStorage.setItem('iduser', response.data.id)
             localStorage.setItem('token', response.data.accessToken);
             //redirect to dashboard
             Swal.fire({
@@ -53,7 +54,19 @@ function Login() {
         .catch((error) => {
 
             //assign error to state "validation"
-            setValidation(error.response.data);
+            Swal.fire({
+                title: 'Login Failed!!',
+                text: 'User and Password dont match!',
+                icon: 'warning',
+                confirmButtonColor: '#d63b30',
+                confirmButtonText: 'back',
+                timer: 2000
+              })
+            .then(() => {
+                window.location.reload('/');
+            })
+
+            // setValidation(error.response.data);
         })
     };
 

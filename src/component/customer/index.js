@@ -1,4 +1,5 @@
 import React,{Component} from 'react';
+import {Button, Input} from 'reactstrap';
 import axios from 'axios';
 import AddCustomer from './addCustomer'
 import EditCustomer from './editCustomer'
@@ -11,12 +12,14 @@ export default class Customer extends Component {
         super(props);
         this.getCustomers = this.getCustomers.bind(this);
         this.handlePageChange = this.handlePageChange.bind(this);
+        this.searchCustomer = this.searchCustomer.bind(this);
+        this.onChangeSearch = this.onChangeSearch.bind(this);
         this.state = {
             customers:[],
             offset: 0,
             page: 1,
             count: 0,
-            per_page: 6,
+            per_page: 5,
             totalPages: 0,
             newCustomerData:{
                 'name':'',
@@ -38,7 +41,8 @@ export default class Customer extends Component {
             uploadCustomerData:{},
             selectedFile:null,
             uploadCustomerModal:false,
-            noDataFound:''
+            noDataFound:'',
+            searchCustomer:''
         }
     }
 
@@ -49,7 +53,7 @@ export default class Customer extends Component {
 
     getCustomers(){
         const {page, per_page} = this.state;
-        axios.get('http://localhost:3001/api/customers?page='+page+'&per_page='+per_page+'',{},)
+        axios.get('http://localhost:3001/api/customers?&page='+page+'&per_page='+per_page+'',{},)
         .then((res)=>{
             const customers = res.data.result.items
             const count = res.data.result.count
@@ -91,7 +95,6 @@ export default class Customer extends Component {
 
     // function add post to api customer 
     addCustomer =()=>{
-        console.log(this.state.newCustomerData)
         axios.post('http://localhost:3001/api/customers', this.state.newCustomerData)
         .then((res)=>{
             const {customers} = this.state
@@ -110,11 +113,25 @@ export default class Customer extends Component {
             Swal.fire({
                 title: 'Data Berhasil diinput.',
                 text: res.data.data,
-                type: 'success',
+                icon: 'success',
               }),
               this.getCustomers())
         })
+        .catch((err) => {
+            Swal.fire({
+                title: 'Oops..!',
+                text: err.response.status+' '+err.response.statusText,
+                icon: 'error',
+                confirmButtonColor: '#d63b30',
+                confirmButtonText: 'back',
+                timer: 2000
+              })
+            .then(() => {
+                window.location.reload('/customers');
+            })
+        })
     }
+
     onKeyPressEdit = (e) => {
         if(e.which === 13) {
           this.updateCustomer();
@@ -141,9 +158,7 @@ export default class Customer extends Component {
         this.setState({
             editCustomerData:{id,name, alias, address, phone},
             editCustomerModal: !this.state.editCustomerModal
-
-        })
-        
+        })        
     }
 
     // function untuk kirim data ke API (PUT)
@@ -263,14 +278,34 @@ export default class Customer extends Component {
         })
     }
 
+    onChangeSearch=(e)=> {
+        const searchCustomer = e.target.value;    
+        this.setState({
+            searchCustomer: searchCustomer
+        });
+      }
+
+    searchCustomer(){
+        const {searchCustomer,page, per_page} = this.state;
+        axios.get('http://localhost:3001/api/customers?name='+searchCustomer+'&page='+page+'&per_page='+per_page+'',{},)
+        .then((res)=>{
+            const customers = res.data.result.items
+            const count = res.data.result.count
+            this.setState({
+                customers: customers ? customers:[],
+                count:count,
+                totalPages:Math.ceil(count/per_page)
+            })
+        })
+      }
+
     render(){
-        const { newCustomerData,editCustomerData,uploadCustomerData, customers} = this.state;
+        const { newCustomerData,editCustomerData,uploadCustomerData, customers, page,per_page,searchCustomer} = this.state;
         let customerDetails = []
-        let no = 1;
         if(customers.length){
-            customerDetails = customers.map((customer)=>{
+                customerDetails = customers.map((customer, index)=>{
                 return <tr key={customer.id}>
-                <td>{no++}</td>
+                <td>{per_page*(page-1)+index+1}</td>
                 <td>{customer.name}</td>
                 <td>{customer.alias}</td>
                 <td>{customer.address}</td>
@@ -288,7 +323,6 @@ export default class Customer extends Component {
                         <button type="button" className="btn btn-danger mr-3" size="sm" onClick={(e)=>{
                             (
                                 this.deleteCustomer(customer.id)
-                                // this.ConfirmDeleteIkan(ikan.id)
                             )}}>
                             Hapus
                         </button>
@@ -305,12 +339,12 @@ export default class Customer extends Component {
                         <div className="container-fluid">
                             <div className="row mb-2">
                             <div className="col-sm-6">
-                                <h1>Master Customers</h1>
+                                <h1>Data Customers</h1>
                             </div>
                             <div className="col-sm-6">
                                 <ol className="breadcrumb float-sm-right">
                                 <li className="breadcrumb-item"><a href="/">Home</a></li>
-                                <li className="breadcrumb-item active">Master Customers</li>
+                                <li className="breadcrumb-item active">Data Customers</li>
                                 </ol>
                             </div>
                             </div>
@@ -323,39 +357,59 @@ export default class Customer extends Component {
                             <div className="row">
                             <div className="col-12">
                                 <div className="card">
-                                <div className="card-header">
-                                    <h3 className="card-title">List Data Customers</h3>
-                                    <AddCustomer
-                                        togglenewCustomerModal = {this.togglenewCustomerModal}
-                                        newCustomerModal = {this.state.newCustomerModal}
-                                        onChangeAddCustomerHandler = {this.onChangeAddCustomerHandler}
-                                        onKeyPressAdd = {this.onKeyPressAdd}
-                                        addCustomer = {this.addCustomer}
-                                        newCustomerData = {newCustomerData}
-                                    />
-                                    <EditCustomer
-                                        toggleEditCustomerModal = {this.toggleEditCustomerModal}
-                                        editCustomerModal = {this.state.editCustomerModal}
-                                        onChangeEditCustomerHandler = {this.onChangeEditCustomerHandler}
-                                        editCustomer = {this.editCustomer}
-                                        editCustomerData = {editCustomerData}
-                                        updateCustomer = {this.updateCustomer}
-                                    />
-                                    <UploadCustomers
-                                        toggleUploadModal = {this.toggleUploadModal}
-                                        uploadCustomerModal = {this.state.uploadCustomerModal}
-                                        onChangeHandler = {this.onChangeHandler}
-                                        onClickUpload = {this.onClickUpload}
-                                        uploadCustomerData = {uploadCustomerData}
-                                    />
-                                </div>
+                                    <div className="card-header pt-1 pb-0 mb-0 mt-0">
+                                        <h3 className="card-title pt-2">List Data Customers</h3>
+                                        <AddCustomer
+                                            togglenewCustomerModal = {this.togglenewCustomerModal}
+                                            newCustomerModal = {this.state.newCustomerModal}
+                                            onChangeAddCustomerHandler = {this.onChangeAddCustomerHandler}
+                                            onKeyPressAdd = {this.onKeyPressAdd}
+                                            addCustomer = {this.addCustomer}
+                                            newCustomerData = {newCustomerData}
+                                        />
+                                        <EditCustomer
+                                            toggleEditCustomerModal = {this.toggleEditCustomerModal}
+                                            editCustomerModal = {this.state.editCustomerModal}
+                                            onChangeEditCustomerHandler = {this.onChangeEditCustomerHandler}
+                                            editCustomer = {this.editCustomer}
+                                            editCustomerData = {editCustomerData}
+                                            updateCustomer = {this.updateCustomer}
+                                        />
+                                        <UploadCustomers
+                                            toggleUploadModal = {this.toggleUploadModal}
+                                            uploadCustomerModal = {this.state.uploadCustomerModal}
+                                            onChangeHandler = {this.onChangeHandler}
+                                            onClickUpload = {this.onClickUpload}
+                                            uploadCustomerData = {uploadCustomerData}
+                                        />
+                                        <br/><br/>
+                                        <li>Total Customers :  <i className="text-center"> {this.state.count}</i>  </li>  
+                                    </div>
+                                    <div className="card-header pt-1 pb-0 mb-0 mt-0 border-0">
+                                        <div className="row">
+                                            <div className="col-md-11 offset-md-1">
+                                                <div className="row">
+                                                    <div className="col-7 mb-0">
+                                                        <div className="form-group mb-0">
+                                                            <Input type="text" className="form-control mb-0" value={searchCustomer} onChange={this.onChangeSearch} placeholder="search customer name here"/>
+                                                        </div>
+                                                    </div>
+                                                    <div className="form-group mb-0">
+                                                        <Button type="submit" className="btn btn-default" onClick={this.searchCustomer}>
+                                                            <i className="fa fa-search"></i>
+                                                        </Button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 {/* /.card-header */}
-                                <div className="card-body">
+                                <div className="card-body mt-0 mb-0 pt-1 pb-0">
                                     <table id="example2" className="table table-bordered table-hover">
                                     <thead>
                                         <tr>
                                         <th>No</th>
-                                        <th>Nama Customer</th>
+                                        <th>Customer Name</th>
                                         <th>Alias</th>
                                         <th>Address</th>
                                         <th>Phone</th>

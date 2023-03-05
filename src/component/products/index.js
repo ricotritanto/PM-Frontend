@@ -1,4 +1,5 @@
 import React,{Component} from 'react';
+import {Button, Input} from 'reactstrap';
 import axios from 'axios';
 import AddProducts from './addProducts'
 import EditProducts from './editProducts'
@@ -11,6 +12,8 @@ export default class Product extends Component {
         super(props);
         this.getProducts = this.getProducts.bind(this);
         this.handlePageChange = this.handlePageChange.bind(this);
+        this.searchData = this.searchData.bind(this);
+        this.onChangeSearch = this.onChangeSearch.bind(this);
         this.state = {
             products:[],
             offset: 0,
@@ -35,7 +38,8 @@ export default class Product extends Component {
             },
             selectedFile:null,
             uploadProductModal:false,
-            noDataFound:''            
+            noDataFound:'',
+            searchData:''      
         }
     }
 
@@ -141,9 +145,7 @@ export default class Product extends Component {
         this.setState({
             editProductData:{id,name, alias},
             editProductModal: !this.state.editProductModal
-
-        })
-        
+        })        
     }
 
     // onKeyPress handle
@@ -294,35 +296,36 @@ export default class Product extends Component {
             }
         );
     }
-
-    // getRequestParams(searchTitle, page, pageSize) {
-    //     let params = {};
-
-    //     if (searchTitle) {
-    //         params["title"] = searchTitle;
-    //     }
-
-    //     if (page) {
-    //         params["page"] = page - 1;
-    //     }
-
-    //     if (pageSize) {
-    //         params["size"] = pageSize;
-    //     }
-
-    //     return params;
-    // }
     
-    
+    onChangeSearch=(e)=> {
+        e.preventDefault();
+        const searchData = e.target.value;   
+        this.setState({
+            searchData: searchData
+        });
+      }
 
+    searchData(){
+        const {searchData,page, per_page} = this.state;
+        axios.get('http://localhost:3001/api/products?name='+searchData+'&page='+page+'&per_page='+per_page+'',{},)
+        .then((res)=>{
+            const products = res.data.result.items
+            const count = res.data.result.count
+            this.setState({
+                products: products ? products:[],
+                count:count,
+                totalPages:Math.ceil(count/per_page)
+            })
+        })
+      }
 
     render(){
-        const { newProductData,editProductData, uploadProductData, products} = this.state;
+        const { newProductData,editProductData, uploadProductData, products, searchData, page,per_page} = this.state;
         let productDetails = []
         if(products.length){
-            productDetails = products.map((product)=>{
+            productDetails = products.map((product, index)=>{
                 return <tr key={product.id}>
-                <td>#</td>
+                <td>{per_page*(page-1)+index+1}</td>
                 <td>{product.name}</td>
                 <td>{product.alias}</td>
                 <td>
@@ -372,8 +375,8 @@ export default class Product extends Component {
                             <div className="row">
                                 <div className="col-12">
                                     <div className="card">
-                                        <div className="card-header">
-                                            <h3 className="card-title"><strong>List Data Products</strong></h3>
+                                        <div className="card-header pt-1 pb-0 mb-0 mt-0">
+                                            <h3 className="card-title pt-2"><strong>List Data Products</strong></h3>
                                             <AddProducts
                                                 togglenewProductModal = {this.togglenewProductModal}
                                                 newProductModal = {this.state.newProductModal}
@@ -400,9 +403,27 @@ export default class Product extends Component {
                                                 uploadProductData = {uploadProductData}
                                             />            
                                             <br/><br/>
-                                            <li>Total Products :  <a className="text-center"> {this.state.count}</a>  </li>                      
+                                            <li>Total Products :  <i className="text-center"> {this.state.count}</i>  </li>  
+                                        </div>              
+                                        <div className="card-header pt-1 pb-0 mb-0 mt-0 border-0">
+                                            <div className="row">
+                                                <div className="col-md-11 offset-md-1">
+                                                    <div className="row">
+                                                        <div className="col-7 mb-0">
+                                                            <div className="form-group mb-0">
+                                                                <Input type="text" className="form-control mb-0" value={searchData} onChange={this.onChangeSearch} placeholder="search product here"/>
+                                                            </div>
+                                                        </div>
+                                                        <div className="form-group mb-0">
+                                                            <Button type="submit" className="btn btn-default" onClick={this.searchData}>
+                                                                <i className="fa fa-search"></i>
+                                                            </Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>                                        
-                                        <div className="card-body">
+                                        <div className="card-body mt-0 mb-0 pt-1 pb-0">
                                             <table id="example2" className="table table-bordered table-hover">
                                             <thead>
                                                 <tr>

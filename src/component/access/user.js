@@ -2,7 +2,6 @@ import React,{Component} from 'react';
 import axios from 'axios';
 import AddUser from './addUser'
 import EditUser from './editUser'
-// import UploadProducts from './uploadProducts'
 import Swal from 'sweetalert2';
 import ReactPaginate from 'react-paginate';
 
@@ -21,7 +20,7 @@ export default class User extends Component {
             newUserData:{
                 "username":'',
                 "email":'',
-                "role":'',
+                "roles":'',
 
             },
             isLoading:false,
@@ -83,7 +82,7 @@ export default class User extends Component {
             optionRole: this.state.optionRole
         })
     }
-    // handle untuk get data dari form data Product
+    // handle untuk get data dari form data user
     onChangeAddUserHandler= (e)=>{
         e.preventDefault();
         let {newUserData} = this.state
@@ -92,31 +91,46 @@ export default class User extends Component {
 
     }
 
-     // function add post to api Product 
-     addResep =()=>{
-        axios.post('http://localhost:3001/api/signup', this.state.newUserData)
+     // function add post to api user
+     addUser =()=>{
+        this.setState({
+            isLoading: true,
+        });
+        axios.post('http://localhost:3001/api/auth/signup', this.state.newUserData)
         .then((res)=>{
-            const {reseps} = this.state
-            const newResep= [...reseps]
-            newResep.push(res.data)
+               Swal.fire({
+                icon: 'success',
+                title: 'Data Berhasil diinput.',
+                text: res.data.message,
+                timer:1500
+              });
+              this.getUser()
+            const {users} = this.state
+            const newUsers= [...users]
+            newUsers.push(res.data)
             this.setState({
-                Resep : newResep,
+                usere : newUsers,
                 newUserModal:false,
+                isLoading:false,
+                showModal: false,
                 newUserData:{
                     'username':'',
                     'email':'',
                     'password':'',
-                    'role':''
+                    'roles':''
                 }
-            },()=>
+            })
+        })
+        .catch((err) => {
             Swal.fire({
-                icon: 'success',
-                title: 'Data Berhasil diinput.',
-                text: res.data.message,
-                type: 'success',
-                timer:1500
-              }),
-              this.getUser())
+                title: 'Oops..!',
+                text: err.response.status+' '+err.response.statusText,
+                icon: 'error',
+                confirmButtonColor: '#d63b30',
+                confirmButtonText: 'back',
+                timer: 2000
+              })
+            this.setState({isLoading:false, newUserModal:false})
         })
     }
 
@@ -162,7 +176,7 @@ export default class User extends Component {
             Swal.fire({
                 title: 'Data Berhasil di Update.',
                 text: res.data.data,
-                type: 'success',
+                icon: 'success',
               });
             this.getUser()
             this.setState({
@@ -216,19 +230,21 @@ export default class User extends Component {
     }
 
     render(){
-        const {users, newUserData, editUserData} = this.state;
+        const {users, newUserData, editUserData, page, per_page} = this.state;
         let userDetails = []
         let noRole = ''
         if(users.length){
-            userDetails = users.map((user)=>{
-                if(user.roles === ''){
+            userDetails = users.map((user,index)=>{
+                const abc = Object.values(users)
+                const nourut = index === 0 ? <td rowSpan={abc.length + 1} style={{verticalAlign: 'middle'}}>{per_page*(page-1)+index+1}</td> : null
+                if(user.roles.length===0){
                     noRole = '-'
                 }
                 else{
                     noRole= user.roles[0].role
                 }
                 return <tr key={user.id}>
-                <td>#</td>
+                {nourut}
                 <td>{user.username}</td>
                 <td>{user.email}</td>
                 <td>{noRole}</td>
@@ -284,8 +300,7 @@ export default class User extends Component {
                                                 togglenewUserModal = {this.togglenewUserModal}
                                                 newUserModal = {this.state.newUserModal}
                                                 optionRole = {this.state.optionRole}
-                                                onChangeAddUserHandler = {this.onChangeAddUserHandler}
-                                                onChangeEditUserHandler = {this.onChangeEditUserHandler}
+                                                onChangeAddUserHandler = {this.onChangeAddUserHandler}                                               
                                                 onKeyPressAdd = {this.onKeyPressAdd}
                                                 addUser = {this.addUser}
                                                 newUserData = {newUserData}

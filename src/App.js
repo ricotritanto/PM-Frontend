@@ -1,20 +1,22 @@
 // import './App.css';
-import React from 'react';
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom';
-import Header from './component/layout/header';
-import Sidebar from './component/layout/sidebar';
+import React from 'react'
+import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
+import Header from './component/layout/header'
+import Sidebar from './component/layout/sidebar'
 import Menu from './component/menu'
-import Footer from './component/layout/footer';
+import Footer from './component/layout/footer'
 import Product from './component/products/index'
 import Customers from './component/customer/index'
 import DeliveryOrder from './component/do/index'
 import Invoice from './component/invoice/index'
 import User from './component/access/user'
 
-import Login from "./component/access/login";
-// import Register from "./component/access/register";
-// import Profile from "./component/access/profile";
+import Login from "./component/access/login"
 import Dashboard from "./component/dashboard"
+
+import 'react-date-range/dist/styles.css'; // main style file
+import 'react-date-range/dist/theme/default.css'; // theme css file
+// import Cookies from 'js-cookie'
 
 function setToken(userToken) {
   console.log(userToken)
@@ -28,10 +30,7 @@ function getToken() {
 
 
 function App() {
-  // const [token, setToken] = useState();
-  // console.log(getToken)
   const token = getToken();
-  // console.log(token)
 
   if(!token) {
     return <Login setToken={setToken} />

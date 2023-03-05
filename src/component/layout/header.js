@@ -1,16 +1,25 @@
 import React,{Component, Fragment} from 'react';
 
 // import { useHistory } from 'react-router-dom';
+import UpdatePassword from '../access/updatePassword'
 
 import Swal from 'sweetalert2';
+import {Button, Modal, ModalBody, ModalHeader,ModalFooter,FormGroup, Label,Input } from 'reactstrap';
 export default class Header extends Component{
     constructor(props){
         super(props)
             this.logout = this.logout.bind(this)
             this.state = {
-                isLoading:false
+                isLoading:false,
+                updatePasswordModal:false
             }
+            this.handleModal = this.handleModal.bind(this);
         
+    }
+
+    handleModal(){
+        console.log('test')
+        this.setState({updatePasswordModal:!this.state.updatePasswordModal})
     }
 
     logout() {
@@ -36,8 +45,8 @@ export default class Header extends Component{
         });
     }
 
-
     render() {
+        // const {updatePasswordModal} = this.props
         return (
             <Fragment>
                 <div>
@@ -83,18 +92,40 @@ export default class Header extends Component{
                             <a className="nav-link" data-toggle="dropdown" href="/">
                             <i className="far fa-user"></i>
                             </a>
-                            <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right">                            
-                                <a href="/" className="dropdown-item">
-                                    <i className="fa fa-id-card mr-2"></i> Update User
-                                </a>
-                            <div className="dropdown-divider"></div>
-                                <i className="dropdown-item dropdown-footer">
-                                    <button onClick={this.logout} className="btn btn-sm btn-warning">Logout</button>
-                                </i>
-                            </div>
+                                <div className="dropdown-menu dropdown-menu-lg dropdown-menu-right">                                
+                                    <i className="dropdown-item dropdown-footer">
+                                        <button className="btn btn-sm btn-success" onClick={()=>this.handleModal()}>Change Password</button>   
+                                    
+                                    </i>                    
+                                    <div className="dropdown-divider"></div>
+                                    <i className="dropdown-item dropdown-footer">
+                                        <button onClick={this.logout} className="btn btn-sm btn-warning">Logout</button>
+                                    </i>
+                                </div>
                             </li>
                         </ul>
                     </nav>
+                    <Modal isOpen={this.state.updatePasswordModal} toggle={this.handleModal}>
+                    <ModalHeader toggle={this.handleModal} style={{ 'backgroundColor': "yellow" }} color="primary" >
+                        <b>Change Password </b>
+                    </ModalHeader>
+                    <ModalBody>
+                        <FormGroup>
+                            <Label for="password">New Password : </Label>
+                            <Input id="newpassword" name="newpassword" />
+                            <Label for="password">Confirm Password:</Label>
+                            <Input id="confirmpass" name="confirpass" />
+                         </FormGroup>
+                    </ModalBody>
+                    <ModalFooter>
+                        <Button color="primary">
+                            Update
+                        </Button>
+                        <Button color="secondary" onClick={this.handleModal}>
+                            Cancel
+                        </Button>
+                    </ModalFooter>
+                </Modal>
                 </div>
             </Fragment>
         )

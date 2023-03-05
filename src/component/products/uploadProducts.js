@@ -5,7 +5,7 @@ export default class uploadProducts extends Component {
     render(){
         return(
             <div>
-                <Button className="float-right mb-4 mr-2" color="primary" onClick={this.props.toggleUploadModal}>
+                <Button className="float-right mb-1 mr-2" color="success" onClick={this.props.toggleUploadModal}>
                     Upload Data Master Products
                 </Button>
                 <Modal isOpen={this.props.uploadProductModal} toggle={this.props.toggleUploadModal}>

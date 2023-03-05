@@ -1,14 +1,14 @@
 import React, { Component} from "react";
 import { Modal,Button, ModalHeader, ModalBody,ModalFooter, FormGroup, Label, Input} from 'reactstrap';
 
-export default class uploadCustomers extends Component {
+export default class uploadDO extends Component {
     render(){
         return(
             <div>
                 <Button className="float-right mb-1 mr-2" color="success" onClick={this.props.toggleUploadModal}>
-                    Upload Data Master Customers
+                    Upload Data
                 </Button>
-                <Modal isOpen={this.props.uploadCustomerModal} toggle={this.props.toggleUploadModal}>
+                <Modal isOpen={this.props.uploadDOModal} toggle={this.props.toggleUploadModal}>
                     <ModalHeader toggle={this.props.toggleUploadModal}>
                         Upload Data
                     </ModalHeader>

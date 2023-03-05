@@ -1,5 +1,5 @@
+"use strict"
 import React, { Component } from 'react';
-
 import { useHistory } from 'react-router-dom';
 import axios from 'axios';
 import CanvasJSReact from './canvas/canvasjs.react';
@@ -7,63 +7,108 @@ var CanvasJSChart = CanvasJSReact.CanvasJSChart;
 // const token = localStorage.getItem("token");
 // const history = useHistory();
 
-var dataPoints=[]
 export default class menu extends Component {
     constructor(props){
         super(props);
         this.state = {
-            totprod : 0,
-            totcustomer:0
+            totDO : 0,
+            totalBuyingPrice:0,
+            totcustomer:0,
+            user:"",
+            setUser:"",
+            chartData:[],
+            chartCustomer:[],
+            isiProduct:[],
+            isiCustomer:[],
         }
 
     }   
-        token(){
-            localStorage.getItem("token")
-        }
-        componentDidMount(){
-            console.log(this.props.token)
-            axios.defaults.headers.common['Authorization'] = `Bearer ${this.props.token}`
-            var chart = this.chart;
-            fetch('https://canvasjs.com/data/gallery/react/nifty-stock-price.json')
-            .then(function(response) {
-                return response.json();
+    token(){
+        localStorage.getItem("token")
+    }
+
+    componentDidMount(){
+        // localStorage.setItem("iduser", JSON.stringify(iduser));
+        // console.log(this.props.iduser)
+        axios.defaults.headers.common['Authorization'] = `Bearer ${this.props.token}`
+        this.getProducts()
+        this.getCustomers()
+        this.getUser()
+        this.getDeliveryOrders()
+        this.getInvoice()
+        this.chartDO()
+        this.chartCust()
+
+    }
+    getUser= async()=>{
+        var a = axios.defaults.headers.common['Authorization'] = `Bearer ${this.props.token}`
+        console.log(a)
+
+        
+        await axios.get('http://localhost:3001/api/users')
+        .then((response) =>{
+            // console.log(response.data)
+            // setUser(response.data)
+        })
+    }
+
+    getProducts(){
+        // console.log(token)            
+        axios.get('http://localhost:3001/api/products')
+        .then((res)=>{
+            const count = res.data.result.count
+            this.setState({
+                totprod:count,
             })
-            .then(function(data) {
-                for (var i = 0; i < data.length; i++) {
-                    dataPoints.push({
-                        x: new Date(data[i].x),
-                        y: data[i].y
-                    });
-                }
-                chart.render();
-            });
-            this.getProducts()
-            this.getCustomers()
 
-        }
-        getProducts(){
-            // console.log(token)            
-            axios.get('http://localhost:3001/api/products')
-            .then((res)=>{
-                const count = res.data.result.count
-                this.setState({
-                    totprod:count,
-                })
+        })
+    }
 
+    getCustomers(){
+        axios.get('http://localhost:3001/api/customers')
+        .then((res)=>{
+            const count = res.data.result.count
+            this.setState({
+                totcustomer:count,
             })
-        }
+        })
+    }
 
-        getCustomers(){
-            axios.get('http://localhost:3001/api/customers')
-            .then((res)=>{
-                const count = res.data.result.count
-                this.setState({
-                    totcustomer:count,
-                })
+
+    getDeliveryOrders(){
+        axios.get('http://localhost:3001/api/delivery_orders/total')
+        .then((res)=>{
+            const abc = res.data.result.items
+            let aaa = ''
+            abc.forEach((item)=>{
+                aaa = item.deliveryOrderItems
             })
-        }
-        useEffect(){
+            const totBP = (aaa.reduce((a,v) =>  a = a +parseInt(v.totalBP) , 0 ))
+            const totSP = (aaa.reduce((a,v) =>  a = a + parseInt(v.totalSP) , 0 ))
+            const converttotBP = Number(totBP).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            const converttotSP = Number(totSP).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            this.setState({
+                totalBuyingPrice:converttotBP,
+                totalSP:converttotSP
+            })
 
+        })
+    }
+
+    getInvoice(){
+        axios.get('http://localhost:3001/api/invoice')
+        .then((res)=>{
+            const abc = res.data.result.items
+            const totAmount = (abc.reduce((a,v) =>  a = a + v.amount , 0 ))
+            const amount = Number(totAmount).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
+            this.setState({
+                totalAmount:amount
+            })
+
+        })
+    }
+
+    useEffect(){
         //check token empty
         if(!this.props.token) {
 
@@ -73,24 +118,71 @@ export default class menu extends Component {
         
         //call function "fetchData"
         this.fetchData();
+        
+    }
+
+    chartDO(){
+        axios.get('http://localhost:3001/api/delivery_orders/chart')
+        .then((res)=>{ 
+            this.setState({
+                isiProduct:res.data.result
+            })
+        })
+     
+    }
+    chartCust(){
+        axios.get('http://localhost:3001/api/delivery_orders/chart/customer')
+        .then((res)=>{
+            this.setState({
+                isiCustomer:res.data.result
+            })
+        })
     }
 
     render() {
-        const options = {
+        const chartData = []
+        const chartCustomer = []
+
+        this.state.isiProduct.map((product) => {
+            chartData.push({
+              label: product.products.name,
+              y:parseInt(product.totalQTY)
+            });
+        });
+        const optionsProduct = {
 			theme: "light2",
 			title: {
-				text: "Stock Price of NIFTY 50"
+				text: "Grafik Penjualan Ikan"
 			},
 			axisY: {
-				title: "Price in USD",
-				prefix: "$"
+				title: "Qty",
+				prefix: "Kg "
 			},
-			data: [{
-				type: "line",
-				xValueFormatString: "MMM YYYY",
-				yValueFormatString: "$#,##0.00",
-				dataPoints: dataPoints
-			}]
+            data: [{
+                type: "column",
+                dataPoints:chartData
+            }]
+            
+		}
+        this.state.isiCustomer.map((customer) => {
+            chartCustomer.push({
+              label: customer.customers.name,
+              y:parseInt(customer.totalQTY)
+            });
+        });
+        const optionsCustomer = {
+			theme: "light2",
+			title: {
+				text: "Grafik Order Customer"
+			},
+			axisY: {
+				title: "Qty",
+				prefix: "Kg "
+			},
+            data: [{
+                type: "column",
+                dataPoints: chartCustomer
+            }]
 		}
         return (
             <div>
@@ -150,8 +242,8 @@ export default class menu extends Component {
                                 {/* small box */}
                                 <div className="small-box bg-warning">
                                 <div className="inner">
-                                    <h3>44</h3>
-                                    <p>User Registrations</p>
+                                    <h3>Rp. {this.state.totalBuyingPrice}</h3>
+                                    <p>Total Buying Price</p>
                                 </div>
                                 <div className="icon">
                                     <i className="ion ion-person-add" />
@@ -162,13 +254,26 @@ export default class menu extends Component {
                             {/* ./col */}
                             <div className="col-lg-3 col-6">
                                 {/* small box */}
-                                <div className="small-box bg-danger">
+                                <div className="small-box bg-warning">
                                 <div className="inner">
-                                    <h3>65</h3>
-                                    <p>month's Total </p>
+                                    <h3>Rp. {this.state.totalSP}</h3>
+                                    <p>Total Selling Price</p>
                                 </div>
                                 <div className="icon">
-                                    <i className="ion ion-pie-graph" />
+                                    <i className="ion ion-person-add" />
+                                </div>
+                                <a href="abc" className="small-box-footer">More info <i className="fas fa-arrow-circle-right" /></a>
+                                </div>
+                            </div>
+                            <div className="col-lg-3 col-6">
+                                {/* small box */}
+                                <div className="small-box bg-warning">
+                                <div className="inner">
+                                    <h3>Rp. {this.state.totalAmount}</h3>
+                                    <p>Total Amount</p>
+                                </div>
+                                <div className="icon">
+                                    <i className="ion ion-person-add" />
                                 </div>
                                 <a href="abc" className="small-box-footer">More info <i className="fas fa-arrow-circle-right" /></a>
                                 </div>
@@ -181,7 +286,8 @@ export default class menu extends Component {
                             <div className="card-header border-0">
                                 <h3 className="card-title">
                                 <i className="fas fa-th mr-1"></i>
-                                Sales Graph
+                                Product Graph
+                                {/* {this.state.setData} */}
                                 </h3>
 
                                 <div className="card-tools">
@@ -194,8 +300,30 @@ export default class menu extends Component {
                                 </div>
                             </div>
                             <div className="card-body">
-                                {/* <canvas class="chart" id="line-chart" style={{style:"min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"}}></canvas> */}
-                                <CanvasJSChart options = {options} onRef={ref => this.chart = ref}/>
+                                <canvas className="chart" id="line-chart" style={{style:"min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"}}></canvas>
+                                <CanvasJSChart options = {optionsProduct} onRef={ref => this.chart = ref}/>
+                            </div>
+                        </div>
+                         <div className="card bg-gradient-info">
+                            <div className="card-header border-0">
+                                <h3 className="card-title">
+                                <i className="fas fa-th mr-1"></i>
+                                Customer Graph
+                                {/* {this.state.setData} */}
+                                </h3>
+
+                                <div className="card-tools">
+                                <button type="button" className="btn bg-info btn-sm" data-card-widget="collapse">
+                                    <i className="fas fa-minus"></i>
+                                </button>
+                                <button type="button" className="btn bg-info btn-sm" data-card-widget="remove">
+                                    <i className="fas fa-times"></i>
+                                </button>
+                                </div>
+                            </div>
+                            <div className="card-body">
+                                <canvas className="chart" id="line-chart" style={{style:"min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"}}></canvas>
+                                <CanvasJSChart options = {optionsCustomer} onRef={ref => this.chart = ref}/>
                             </div>
                         </div>
                     </section>
