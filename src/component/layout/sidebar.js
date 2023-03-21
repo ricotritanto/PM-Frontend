@@ -2,7 +2,9 @@ import React, {Component, Fragment} from 'react';
 // import { Link } from 'react-router-dom';
 
 export default class Sidebar extends Component {
+
     render(){
+        const username = localStorage.getItem('usernya')
         return(
             <Fragment>
                 <aside className="main-sidebar sidebar-dark-primary elevation-4">                    
@@ -18,7 +20,7 @@ export default class Sidebar extends Component {
                                 <img src="dist/img/user2-160x160.jpg" className="img-circle elevation-2" alt="User" />
                             </div>
                             <div className="info">
-                                <a href="abc" className="d-block">Bagoes Pete</a>
+                                <a href="abc" className="d-block">{username}</a>
                             </div>
                         </div>
 

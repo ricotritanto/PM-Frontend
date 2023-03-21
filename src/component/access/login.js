@@ -1,11 +1,10 @@
 //import hook react
-import React, { useState, useEffect } from 'react';
-
+import React, { useState,useEffect } from 'react';
+//import axios
+import axios from 'axios';
 //import hook useHitory from react router dom
 import { useHistory } from 'react-router';
 
-//import axios
-import axios from 'axios';
 // import PropTypes from 'prop-types';
 import Swal from 'sweetalert2';
 
@@ -15,22 +14,18 @@ function Login() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
 
-    //define state validation
-    // const [setValidation] = useState([]);
-
     //define history
     const history = useHistory();
 
     //hook useEffect
     useEffect(() => {
 
-        //check token
+        // check token
         if(localStorage.getItem('token')) {
-
-            //redirect page dashboard
+            // redirect page dashboard
             history.push('/dashboard');
         }
-    });
+    })
 
     //function "loginHanlder"
     const loginHandler = async (e) => {
@@ -39,17 +34,18 @@ function Login() {
         //send data to server
         await axios.post('http://localhost:3001/api/auth/signin', {email,password})
         .then((response) => {
-            // console.log(response.data)
             //set token on localStorage
             localStorage.setItem('iduser', response.data.id)
+            localStorage.setItem('usernya', response.data.username)
             localStorage.setItem('token', response.data.accessToken);
             //redirect to dashboard
             Swal.fire({
                 title: 'Login Successfully!',
                 text: response.data.username,
                 type: 'success',
-              });
+              })
             window.location.reload('/dashboard');
+            // history.push('/dashboard')
         })
         .catch((error) => {
 

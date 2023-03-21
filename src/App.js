@@ -1,6 +1,5 @@
-// import './App.css';
-import React from 'react'
-import {BrowserRouter as Router, Route, Switch} from 'react-router-dom'
+import React,{useEffect} from 'react'
+import {BrowserRouter as Router, Route, Switch, Redirect} from 'react-router-dom'
 import Header from './component/layout/header'
 import Sidebar from './component/layout/sidebar'
 import Menu from './component/menu'
@@ -13,27 +12,23 @@ import User from './component/access/user'
 
 import Login from "./component/access/login"
 import Dashboard from "./component/dashboard"
+import authHeader from './services/authHeader'
 
 import 'react-date-range/dist/styles.css'; // main style file
 import 'react-date-range/dist/theme/default.css'; // theme css file
 // import Cookies from 'js-cookie'
 
-function setToken(userToken) {
-  console.log(userToken)
-  sessionStorage.setItem('token', JSON.stringify(userToken));
-}
-
-function getToken() {
-  const tokenString = localStorage.getItem('token');
-  return tokenString
-}
-
-
 function App() {
-  const token = getToken();
-
-  if(!token) {
-    return <Login setToken={setToken} />
+  const token = authHeader().header;
+  console.log(token)
+  useEffect(()=>{
+    const timeout = setTimeout(()=>{
+      localStorage.removeItem('token')
+    },5*60*1000)
+    return ()=> clearTimeout(timeout)
+  },[])
+  if(!token || token == undefined) {
+    return <Login getToken={token}/>
   }
 
   return (   
@@ -44,8 +39,6 @@ function App() {
         <Switch>
           <Route exact path="/" component={Login} />
           <Route exact path="/dashboard" component={Dashboard}/>
-          {/* <Route exact path="/register"  component={Register} /> */}
-            {/* <Route exact path="/profile" component={Profile} /> */}
           <Route exact path="/menu"  component = {Menu}></Route>
           <Route exact path="/product"  component = {Product}></Route>
           <Route exact path="/customers"  component = {Customers}></Route>

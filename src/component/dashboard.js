@@ -1,11 +1,12 @@
-"use strict"
 import React, { Component } from 'react';
-import { useHistory } from 'react-router-dom';
+// import { useHistory } from 'react-router-dom';
 import axios from 'axios';
+import authHeader from '../services/authHeader';
 import CanvasJSReact from './canvas/canvasjs.react';
 var CanvasJSChart = CanvasJSReact.CanvasJSChart;
-// const token = localStorage.getItem("token");
-// const history = useHistory();
+
+// set instance defaults
+// authHeader()
 
 export default class menu extends Component {
     constructor(props){
@@ -22,15 +23,10 @@ export default class menu extends Component {
             isiCustomer:[],
         }
 
-    }   
-    token(){
-        localStorage.getItem("token")
     }
-
     componentDidMount(){
-        // localStorage.setItem("iduser", JSON.stringify(iduser));
-        // console.log(this.props.iduser)
-        axios.defaults.headers.common['Authorization'] = `Bearer ${this.props.token}`
+        // axios.defaults.headers.common['Authorization'] = `x-access-token: ${tokene}`
+        console.log(authHeader().header)
         this.getProducts()
         this.getCustomers()
         this.getUser()
@@ -41,19 +37,10 @@ export default class menu extends Component {
 
     }
     getUser= async()=>{
-        var a = axios.defaults.headers.common['Authorization'] = `Bearer ${this.props.token}`
-        console.log(a)
-
-        
         await axios.get('http://localhost:3001/api/users')
-        .then((response) =>{
-            // console.log(response.data)
-            // setUser(response.data)
-        })
     }
 
-    getProducts(){
-        // console.log(token)            
+    getProducts(){      
         axios.get('http://localhost:3001/api/products')
         .then((res)=>{
             const count = res.data.result.count
@@ -83,8 +70,9 @@ export default class menu extends Component {
             abc.forEach((item)=>{
                 aaa = item.deliveryOrderItems
             })
-            const totBP = (aaa.reduce((a,v) =>  a = a +parseInt(v.totalBP) , 0 ))
-            const totSP = (aaa.reduce((a,v) =>  a = a + parseInt(v.totalSP) , 0 ))
+            const emptyArr = [{ totalBP: 0, totalSP: 0 }]
+            const totBP = aaa.length? aaa.reduce((a,v) =>  a = a +parseInt(v.totalBP) , 0 ): emptyArr[0].totalBP
+            const totSP = aaa.length? aaa.reduce((a,v) =>  a = a + parseInt(v.totalSP) , 0 ): emptyArr[0].totalSP
             const converttotBP = Number(totBP).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
             const converttotSP = Number(totSP).toFixed(2).replace(/\d(?=(\d{3})+\.)/g, '$&,');
             this.setState({
@@ -108,18 +96,6 @@ export default class menu extends Component {
         })
     }
 
-    useEffect(){
-        //check token empty
-        if(!this.props.token) {
-
-            //redirect login page
-            useHistory.push('/');
-        }
-        
-        //call function "fetchData"
-        this.fetchData();
-        
-    }
 
     chartDO(){
         axios.get('http://localhost:3001/api/delivery_orders/chart')
@@ -147,8 +123,8 @@ export default class menu extends Component {
             chartData.push({
               label: product.products.name,
               y:parseInt(product.totalQTY)
-            });
-        });
+            })
+        })
         const optionsProduct = {
 			theme: "light2",
 			title: {
@@ -300,9 +276,10 @@ export default class menu extends Component {
                                 </div>
                             </div>
                             <div className="card-body">
-                                <canvas className="chart" id="line-chart" style={{style:"min-height: 250px; height: 250px; max-height: 250px; max-width: 100%;"}}></canvas>
-                                <CanvasJSChart options = {optionsProduct} onRef={ref => this.chart = ref}/>
+                                <canvas className="chart" id="line-chart" style={{minHeight: '250px', height: '250px', maxHeight: '250px', maxWidth: '100%'}}></canvas>
+                                <CanvasJSChart options={optionsProduct} onRef={ref => this.chart = ref}/>
                             </div>
+
                         </div>
                          <div className="card bg-gradient-info">
                             <div className="card-header border-0">

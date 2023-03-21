@@ -1,4 +1,3 @@
-'use strict'
 import React,{Component} from 'react';
 import {Button, Input} from 'reactstrap';
 import axios from 'axios';
@@ -209,7 +208,6 @@ export default class Delivery_order extends Component {
 
     // toggle tombol edit data
     toggleEditDeliveryModal=()=>{
-        console.log(this.state)
         this.setState({
             editDeliveryModal : !this.state.editDeliveryModal,
             optionCustomer : this.state.optionCustomer,

@@ -13,12 +13,11 @@ export default class Header extends Component{
                 isLoading:false,
                 updatePasswordModal:false
             }
-            this.handleModal = this.handleModal.bind(this);
+            this.handleModal = this.handleModal.bind(this)
         
     }
 
     handleModal(){
-        console.log('test')
         this.setState({updatePasswordModal:!this.state.updatePasswordModal})
     }
 
